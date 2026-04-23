@@ -54,20 +54,13 @@ If you are on Windows PowerShell:
 Copy-Item .env.example .env
 ```
 
-3. Update `.env` values:
-
-```env
-PORT=3000
-MONGODB_URI=mongodb://127.0.0.1:27017/url_shortener
-```
-
-4. Start development server:
+3. Start development server:
 
 ```bash
 npm run dev
 ```
 
-5. Open:
+4. Open:
 
 - Home: `http://localhost:3000/`
 - Dashboard: `http://localhost:3000/dashboard`
