@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('partials/head') %>
+  </head>
+  <body>
+    <%- include('partials/navbar', { activePage }) %>
+
+    <main class="container py-5">
+      <section class="panel-card p-5 text-center reveal">
+        <h1 class="display-6 fw-bold mb-3">Something went wrong</h1>
+        <p class="text-secondary mb-3">
+          The server hit an unexpected issue. Please retry in a moment.
+        </p>
+        <p class="small text-secondary mb-4">Error reference: <%= errorId %></p>
+        <a href="/" class="btn btn-gradient">
+          <i class="bi bi-arrow-repeat me-1"></i>Try Again
+        </a>
+      </section>
+    </main>
+
+    <%- include('partials/scripts') %>
+  </body>
+</html>
+

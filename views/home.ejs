@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('partials/head') %>
+  </head>
+  <body>
+    <%- include('partials/navbar', { activePage }) %>
+
+    <main class="container py-5">
+      <section class="hero-panel panel-card p-4 p-lg-5 mb-4 reveal">
+        <div class="row align-items-center g-4">
+          <div class="col-lg-7">
+            <div class="hero-brand-lockup">
+              <span class="hero-brand-orb"></span>
+              <div class="hero-brand-copy">
+                <span class="hero-brand-name">SnapLink</span>
+                <span class="hero-slogan">Snap it. Share it.</span>
+              </div>
+            </div>
+            <h1 class="hero-title display-5 mb-3">
+              Transform long links into shareable smart URLs
+            </h1>
+            <p class="lead text-secondary mb-0">
+              Shorten links instantly, track click behavior, and monitor activity with a
+              premium dashboard experience.
+            </p>
+          </div>
+          <div class="col-lg-5">
+            <div class="row g-3">
+              <div class="col-6">
+                <article class="metric-card h-100">
+                  <div class="metric-label">Total Links</div>
+                  <div class="metric-value"><%= formatNumber(stats.totalUrls) %></div>
+                </article>
+              </div>
+              <div class="col-6">
+                <article class="metric-card h-100">
+                  <div class="metric-label">Total Clicks</div>
+                  <div class="metric-value"><%= formatNumber(stats.totalClicks) %></div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel-card create-url-panel p-4 p-lg-5 mb-4 reveal">
+        <h2 class="h4 mb-3">Create your short URL</h2>
+        <form method="POST" action="/shorten" id="shortenForm" novalidate>
+          <div class="input-group input-group-lg modern-input-group">
+            <span class="input-group-text"><i class="bi bi-globe-americas"></i></span>
+            <input
+              type="text"
+              class="form-control"
+              id="originalUrl"
+              name="originalUrl"
+              placeholder="https://example.com/your-very-long-url"
+              required
+              value="<%= previousInput %>"
+            />
+            <button class="btn btn-gradient px-4 btn-generate" type="submit">
+              <span class="btn-label">Generate</span>
+              <span class="btn-loader" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+              </span>
+            </button>
+          </div>
+        </form>
+
+        <% if (errorMessage) { %>
+        <div class="alert alert-danger mt-3 mb-0 d-flex align-items-center gap-2" role="alert">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span><%= errorMessage %></span>
+        </div>
+        <% } %>
+      </section>
+
+      <% if (shortResult) { %>
+      <section class="panel-card p-4 mb-4 reveal success-panel">
+        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-start">
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="success-dot"></span>
+              <h3 class="h5 mb-0">Short URL ready</h3>
+              <% if (shortResult.isReused) { %>
+              <span class="badge text-bg-warning">Existing link reused</span>
+              <% } else { %>
+              <span class="badge text-bg-success">New link created</span>
+              <% } %>
+            </div>
+            <a class="short-link fw-semibold fs-5" href="<%= shortResult.shortUrl %>" target="_blank">
+              <%= shortResult.shortUrl %>
+            </a>
+            <p class="mb-0 mt-2 text-secondary text-break">
+              Original: <%= shortResult.originalUrl %>
+            </p>
+          </div>
+          <div class="d-flex gap-2">
+            <button
+              class="btn btn-outline-primary"
+              data-copy="<%= shortResult.shortUrl %>"
+              type="button"
+              data-bs-toggle="tooltip"
+              data-bs-title="Copy short URL"
+            >
+              <i class="bi bi-clipboard"></i>
+            </button>
+            <a class="btn btn-primary" href="<%= shortResult.shortUrl %>" target="_blank">
+              Open
+            </a>
+          </div>
+        </div>
+      </section>
+      <% } %>
+
+      <section class="panel-card p-4 p-lg-5 reveal recent-links-card">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+          <h2 class="h4 mb-0">Recently generated links</h2>
+          <a href="/dashboard" class="btn btn-sm btn-outline-dark">
+            Open Dashboard <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+
+        <% if (!recentUrls.length) { %>
+        <div class="empty-state">
+          <i class="bi bi-link-45deg"></i>
+          <p class="mb-0">No links yet. Create your first short URL above.</p>
+        </div>
+        <% } else { %>
+        <div class="table-responsive recent-table-shell">
+          <table class="table table-modern align-middle">
+            <thead>
+              <tr>
+                <th>Short URL</th>
+                <th>Original URL</th>
+                <th>Clicks</th>
+                <th>Created</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% recentUrls.forEach((url) => { %>
+              <tr>
+                <td>
+                  <a href="<%= baseUrl %>/<%= url.shortCode %>" target="_blank">
+                    <%= baseUrl %>/<%= url.shortCode %>
+                  </a>
+                </td>
+                <td class="text-break"><%= url.originalUrl %></td>
+                <td>
+                  <span class="data-pill"><%= formatNumber(url.clicks) %></span>
+                </td>
+                <td><%= formatDate(url.createdAt) %></td>
+                <td class="text-end">
+                  <form
+                    method="POST"
+                    action="/urls/<%= url._id %>/delete"
+                    class="d-inline-flex js-delete-url-form"
+                  >
+                    <input type="hidden" name="redirectTo" value="/" />
+                    <button
+                      class="btn btn-sm btn-delete-link"
+                      type="button"
+                      data-delete-url-trigger
+                      data-short-url="<%= baseUrl %>/<%= url.shortCode %>"
+                      data-original-url="<%= url.originalUrl %>"
+                    >
+                      <i class="bi bi-trash3 me-1"></i>Delete
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+        <% } %>
+      </section>
+    </main>
+
+    <div
+      id="deleteConfirmModal"
+      class="delete-confirm-modal"
+      aria-hidden="true"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="deleteConfirmTitle"
+    >
+      <div class="delete-confirm-backdrop" data-delete-modal-close></div>
+      <div class="delete-confirm-card" role="document">
+        <button
+          type="button"
+          class="delete-confirm-close"
+          aria-label="Close"
+          data-delete-modal-close
+        >
+          <i class="bi bi-x-lg"></i>
+        </button>
+        <div class="delete-confirm-icon" aria-hidden="true">
+          <i class="bi bi-trash3-fill"></i>
+        </div>
+        <h3 class="h5 mb-2" id="deleteConfirmTitle">Delete this short URL?</h3>
+        <p class="text-secondary mb-3">
+          This action cannot be undone. The short link will stop redirecting immediately.
+        </p>
+        <div class="delete-confirm-preview mb-3">
+          <div class="delete-confirm-label">Short URL</div>
+          <div id="deleteConfirmShortUrl" class="delete-confirm-value text-break"></div>
+          <div class="delete-confirm-label mt-2">Original URL</div>
+          <div id="deleteConfirmOriginalUrl" class="delete-confirm-value text-break"></div>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-outline-dark" data-delete-modal-close>
+            Cancel
+          </button>
+          <button type="button" class="btn btn-delete-solid" id="deleteConfirmSubmit">
+            <i class="bi bi-trash3 me-1"></i>Delete Link
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="copyFeedback" class="copy-feedback" role="status" aria-live="polite"></div>
+
+    <%- include('partials/scripts') %>
+  </body>
+</html>

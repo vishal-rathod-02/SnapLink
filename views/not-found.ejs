@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('partials/head') %>
+  </head>
+  <body>
+    <%- include('partials/navbar', { activePage }) %>
+
+    <main class="container py-5">
+      <section class="panel-card p-5 text-center reveal">
+        <h1 class="display-6 fw-bold mb-3">Not Found</h1>
+        <% if (missingCode) { %>
+        <p class="text-secondary mb-2">
+          The short URL code <strong><%= missingCode %></strong> does not exist.
+        </p>
+        <% } else { %>
+        <p class="text-secondary mb-2">The page you are looking for is not available.</p>
+        <% } %>
+        <a href="/" class="btn btn-gradient mt-2">
+          <i class="bi bi-arrow-left me-1"></i>Back to Home
+        </a>
+      </section>
+    </main>
+
+    <%- include('partials/scripts') %>
+  </body>
+</html>
+

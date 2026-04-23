@@ -1,0 +1,55 @@
+<nav class="navbar navbar-expand-lg sticky-top glass-nav">
+  <div class="container py-2">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+      <span class="brand-mark" aria-hidden="true">
+        <span class="brand-mark-ring"></span>
+        <span class="brand-mark-core">
+          <i class="bi bi-lightning-charge-fill"></i>
+        </span>
+        <span class="brand-mark-glint"></span>
+      </span>
+      <span class="brand-copy">
+        <span class="brand-name">SnapLink</span>
+        <span class="brand-tagline">Snap it. Share it.</span>
+      </span>
+    </a>
+    <button
+      class="navbar-toggler border-0"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#mainNav"
+      aria-controls="mainNav"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+        <li class="nav-item">
+          <a
+            class="nav-link <%= activePage === 'dashboard' ? 'active' : '' %>"
+            href="/dashboard"
+          >
+            <i class="bi bi-speedometer2 me-1"></i>Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <button
+            id="themeToggle"
+            class="theme-toggle-btn"
+            type="button"
+            aria-label="Switch to dark mode"
+            aria-pressed="false"
+          >
+            <span class="theme-toggle-icon-wrap" aria-hidden="true">
+              <i class="bi bi-moon-stars-fill theme-icon theme-icon-dark"></i>
+              <i class="bi bi-sun-fill theme-icon theme-icon-light"></i>
+            </span>
+            <span class="theme-toggle-text">Dark </span>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

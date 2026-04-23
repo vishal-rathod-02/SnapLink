@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('partials/head') %>
+  </head>
+  <body>
+    <%- include('partials/navbar', { activePage }) %>
+
+    <main class="container py-5">
+      <section class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 reveal">
+        <div>
+          <h1 class="display-6 fw-bold mb-1">Analytics Dashboard</h1>
+          <p class="text-secondary mb-0">
+            Real-time insights from your URL shortening and click activity.
+          </p>
+        </div>
+        <a href="/" class="btn btn-gradient">
+          <i class="bi bi-plus-lg me-1"></i>Create New Link
+        </a>
+      </section>
+
+      <section class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+          <article class="metric-card h-100 reveal">
+            <div class="metric-label">Total URLs</div>
+            <div class="metric-value"><%= formatNumber(stats.totalUrls) %></div>
+          </article>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <article class="metric-card h-100 reveal">
+            <div class="metric-label">Total Clicks</div>
+            <div class="metric-value"><%= formatNumber(stats.totalClicks) %></div>
+          </article>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <article class="metric-card h-100 reveal">
+            <div class="metric-label">Activity Logs</div>
+            <div class="metric-value"><%= formatNumber(stats.totalActivities) %></div>
+          </article>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <article class="metric-card h-100 reveal">
+            <div class="metric-label">Avg Click/URL</div>
+            <div class="metric-value"><%= stats.avgClicksPerUrl %></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="row g-4 mb-4">
+        <div class="col-lg-7">
+          <article class="panel-card p-4 h-100 reveal">
+            <h2 class="h5 mb-3">Last 7 Days Trend</h2>
+            <p class="text-secondary small mb-4">
+              Blue bars represent new short URLs, and orange bars represent visits.
+            </p>
+            <div class="trend-summary mb-3">
+              <span class="trend-chip trend-chip-url">
+                New URLs: <strong><%= formatNumber(charts.totalCreatedInWindow) %></strong>
+              </span>
+              <span class="trend-chip trend-chip-click">
+                Visits: <strong><%= formatNumber(charts.totalVisitsInWindow) %></strong>
+              </span>
+            </div>
+
+            <% if (!charts.hasTrendActivity) { %>
+            <div class="empty-state trend-empty">
+              <i class="bi bi-activity"></i>
+              <p class="mb-0">
+                No activity in the last 7 days yet. Create a new short link to start tracking.
+              </p>
+            </div>
+            <% } else { %>
+            <% charts.labels.forEach((label, index) => { %>
+            <% const urlValue = charts.urlSeries[index]; %>
+            <% const clickValue = charts.clickSeries[index]; %>
+            <% const urlWidth = (urlValue / charts.maxDaily) * 100; %>
+            <% const clickWidth = (clickValue / charts.maxDaily) * 100; %>
+            <div class="trend-row">
+              <div class="trend-date"><%= label %></div>
+              <div class="trend-bars">
+                <div class="trend-track">
+                  <div
+                    class="trend-fill trend-fill-url"
+                    data-fill-width="<%= urlWidth %>"
+                  ></div>
+                </div>
+                <div class="trend-track">
+                  <div
+                    class="trend-fill trend-fill-click"
+                    data-fill-width="<%= clickWidth %>"
+                  ></div>
+                </div>
+              </div>
+              <div class="trend-values"><%= urlValue %> / <%= clickValue %></div>
+            </div>
+            <% }) %>
+            <% } %>
+          </article>
+        </div>
+
+        <div class="col-lg-5">
+          <article class="panel-card p-4 h-100 reveal">
+            <h2 class="h5 mb-3">Top Performing Links</h2>
+            <% if (!topUrls.length) { %>
+            <div class="empty-state mt-2">
+              <i class="bi bi-bar-chart"></i>
+              <p class="mb-0">No click data available yet.</p>
+            </div>
+            <% } else { %>
+            <% const maxClicks = topUrls[0].clicks || 1; %>
+            <div class="d-flex flex-column gap-3">
+              <% topUrls.forEach((url) => { %>
+              <div class="top-link-item">
+                <div class="d-flex justify-content-between gap-3 small mb-1">
+                  <a href="<%= baseUrl %>/<%= url.shortCode %>" target="_blank" class="text-truncate">
+                    <%= baseUrl %>/<%= url.shortCode %>
+                  </a>
+                  <strong><%= formatNumber(url.clicks) %> clicks</strong>
+                </div>
+                <div class="progress modern-progress" role="progressbar" aria-valuenow="<%= url.clicks %>" aria-valuemin="0" aria-valuemax="<%= maxClicks %>">
+                  <div
+                    class="progress-bar"
+                    data-fill-width="<%= (url.clicks / maxClicks) * 100 %>"
+                  ></div>
+                </div>
+              </div>
+              <% }) %>
+            </div>
+            <% } %>
+          </article>
+        </div>
+      </section>
+
+      <section class="row g-4 align-items-start">
+        <div class="col-lg-6">
+          <article class="panel-card p-4 reveal">
+            <h2 class="h5 mb-3">Recent URL Records</h2>
+            <% if (!recentUrls.length) { %>
+            <div class="empty-state mt-2">
+              <i class="bi bi-hourglass-split"></i>
+              <p class="mb-0">No URLs created yet.</p>
+            </div>
+            <% } else { %>
+            <div class="records-scroll d-flex flex-column gap-3">
+              <% recentUrls.forEach((url) => { %>
+              <div class="list-row">
+                <div>
+                  <a href="<%= baseUrl %>/<%= url.shortCode %>" target="_blank" class="fw-semibold">
+                    <%= baseUrl %>/<%= url.shortCode %>
+                  </a>
+                  <div class="text-secondary small text-break"><%= url.originalUrl %></div>
+                </div>
+                <div class="text-end small">
+                  <div><%= formatNumber(url.clicks) %> clicks</div>
+                  <div class="text-secondary"><%= formatRelativeTime(url.createdAt) %></div>
+                </div>
+              </div>
+              <% }) %>
+            </div>
+            <% } %>
+          </article>
+        </div>
+
+        <div class="col-lg-6">
+          <article class="panel-card p-4 reveal">
+            <h2 class="h5 mb-3">Recent Activity Timeline</h2>
+            <% if (!recentActivity.length) { %>
+            <div class="empty-state mt-2">
+              <i class="bi bi-clock-history"></i>
+              <p class="mb-0">No activity yet.</p>
+            </div>
+            <% } else { %>
+            <div class="timeline timeline-scroll">
+              <% recentActivity.forEach((activity) => { %>
+              <div class="timeline-item">
+                <div class="timeline-dot <%= activity.type === 'VISITED' ? 'is-visit' : 'is-create' %>"></div>
+                <div>
+                  <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <strong><%= activity.type === 'VISITED' ? 'Link Visited' : 'URL Shortened' %></strong>
+                    <% if (activity.shortCode) { %>
+                    <a href="<%= baseUrl %>/<%= activity.shortCode %>" target="_blank">
+                      /<%= activity.shortCode %>
+                    </a>
+                    <% } %>
+                  </div>
+                  <% if (activity.originalUrl) { %>
+                  <div class="small text-secondary text-break"><%= activity.originalUrl %></div>
+                  <% } %>
+                  <div class="small text-secondary mt-1">
+                    <%= formatDate(activity.createdAt) %> &bull; IP <%= activity.ipAddress %>
+                  </div>
+                </div>
+              </div>
+              <% }) %>
+            </div>
+            <% } %>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <%- include('partials/scripts') %>
+  </body>
+</html>
