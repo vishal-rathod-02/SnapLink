@@ -6,6 +6,9 @@ Modern URL shortener built with:
 - EJS + Bootstrap (UI/UX)
 - MongoDB + Mongoose (database)
 
+## 🌐 Live Demo
+https://snaplink-9vc5.onrender.com/
+
 ## Features
 
 - Shorten long URLs into compact unique links
