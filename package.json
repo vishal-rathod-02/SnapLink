@@ -1,5 +1,5 @@
 {
-  "name": "url-shortener",
+  "name": "snaplink",
   "version": "1.0.0",
   "description": "SSR URL shortener with analytics dashboard using Express, EJS, Bootstrap, and MongoDB",
   "main": "server.js",
