@@ -90,6 +90,7 @@ h5,
 .navbar-brand {
   position: relative;
   z-index: 1;
+  min-width: 0;
 }
 
 .brand-mark {
@@ -140,6 +141,7 @@ h5,
   display: flex;
   flex-direction: column;
   line-height: 1.05;
+  min-width: 0;
 }
 
 .brand-name {
@@ -379,6 +381,7 @@ h5,
 .modern-input-group .form-control {
   border-color: #d5deee;
   box-shadow: none;
+  min-width: 0;
 }
 
 .modern-input-group .form-control:focus {
@@ -1397,6 +1400,58 @@ html[data-theme="dark"] .theme-icon-dark {
 }
 
 @media (max-width: 991px) {
+  .glass-nav .container {
+    align-items: center;
+  }
+
+  .glass-nav .navbar-collapse {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    margin-top: 0.9rem;
+  }
+
+  .glass-nav .navbar-nav {
+    width: 100%;
+    gap: 0.6rem;
+    padding: 0.72rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+  }
+
+  .glass-nav .nav-item {
+    width: 100%;
+  }
+
+  .glass-nav .nav-link,
+  .glass-nav .theme-toggle-btn {
+    width: 100%;
+  }
+
+  .glass-nav .nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.55rem;
+    padding: 0.72rem 1rem !important;
+    text-align: left;
+  }
+
+  .glass-nav .theme-toggle-btn {
+    min-height: 46px;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .glass-nav .nav-link i,
+  .glass-nav .theme-toggle-icon-wrap {
+    flex: 0 0 16px;
+    justify-content: center;
+  }
+
   .trend-row {
     grid-template-columns: 74px 1fr 54px;
     gap: 0.5rem;
@@ -1420,6 +1475,23 @@ html[data-theme="dark"] .theme-icon-dark {
   .brand-mark-core {
     width: 20px;
     height: 20px;
+  }
+
+  .brand-name {
+    font-size: 0.98rem;
+  }
+
+  .modern-input-group {
+    row-gap: 0.8rem;
+  }
+
+  .modern-input-group .btn-generate {
+    flex: 1 0 100%;
+    width: 100%;
+    min-width: 0;
+    min-height: 54px;
+    margin-left: 0 !important;
+    border-radius: 16px !important;
   }
 
   .list-row {
