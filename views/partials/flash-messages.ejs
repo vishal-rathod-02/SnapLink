@@ -1,0 +1,12 @@
+<% if (flashMessages && flashMessages.length) { %>
+<div class="flash-stack mb-4">
+  <% flashMessages.forEach((message) => { %>
+  <div class="alert alert-<%= message.type %> flash-alert d-flex align-items-start gap-2 mb-0" role="alert">
+    <i
+      class="bi <%= message.type === 'success' ? 'bi-check-circle-fill' : message.type === 'warning' ? 'bi-shield-exclamation' : message.type === 'danger' ? 'bi-exclamation-octagon-fill' : 'bi-info-circle-fill' %>"
+    ></i>
+    <span><%= message.text %></span>
+  </div>
+  <% }) %>
+</div>
+<% } %>

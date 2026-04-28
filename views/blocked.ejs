@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('partials/head') %>
+  </head>
+  <body>
+    <%- include('partials/navbar', { activePage }) %>
+
+    <main class="container py-5">
+      <section class="panel-card p-5 text-center reveal">
+        <span class="guest-create-kicker mb-3 d-inline-flex">Status <%= statusCode %></span>
+        <h1 class="display-6 fw-bold mb-3"><%= headline %></h1>
+        <p class="text-secondary mb-4"><%= description %></p>
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+          <a href="<%= primaryHref %>" class="btn btn-gradient">
+            <i class="bi bi-arrow-left me-1"></i><%= primaryLabel %>
+          </a>
+          <a href="<%= secondaryHref %>" class="btn btn-outline-dark"><%= secondaryLabel %></a>
+        </div>
+      </section>
+    </main>
+
+    <%- include('partials/scripts') %>
+  </body>
+</html>

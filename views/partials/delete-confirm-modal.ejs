@@ -1,0 +1,41 @@
+<div
+  id="deleteConfirmModal"
+  class="delete-confirm-modal"
+  aria-hidden="true"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="deleteConfirmTitle"
+>
+  <div class="delete-confirm-backdrop" data-delete-modal-close></div>
+  <div class="delete-confirm-card" role="document">
+    <button
+      type="button"
+      class="delete-confirm-close"
+      aria-label="Close"
+      data-delete-modal-close
+    >
+      <i class="bi bi-x-lg"></i>
+    </button>
+    <div class="delete-confirm-icon" aria-hidden="true">
+      <i class="bi bi-trash3-fill"></i>
+    </div>
+    <h3 class="h5 mb-2" id="deleteConfirmTitle">Delete this short URL?</h3>
+    <p class="text-secondary mb-3">
+      This action cannot be undone. The short link will stop redirecting immediately.
+    </p>
+    <div class="delete-confirm-preview mb-3">
+      <div class="delete-confirm-label">Short URL</div>
+      <div id="deleteConfirmShortUrl" class="delete-confirm-value text-break"></div>
+      <div class="delete-confirm-label mt-2">Original URL</div>
+      <div id="deleteConfirmOriginalUrl" class="delete-confirm-value text-break"></div>
+    </div>
+    <div class="d-flex justify-content-end gap-2">
+      <button type="button" class="btn btn-outline-dark" data-delete-modal-close>
+        Cancel
+      </button>
+      <button type="button" class="btn btn-delete-solid" id="deleteConfirmSubmit">
+        <i class="bi bi-trash3 me-1"></i>Delete Link
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('partials/head') %>
+  </head>
+  <body>
+    <%- include('partials/navbar', { activePage }) %>
+
+    <main class="container py-5">
+      <%- include('partials/flash-messages') %>
+
+      <section class="row g-4 align-items-stretch auth-layout">
+        <div class="col-lg-5">
+          <article class="panel-card auth-side-panel p-4 p-lg-5 reveal h-100">
+            <span class="auth-kicker">Member Access</span>
+            <h1 class="hero-title h2 mt-3 mb-3"><%= heading %></h1>
+            <p class="lead text-secondary mb-4"><%= subheading %></p>
+            <div class="d-flex flex-column gap-3">
+              <div class="auth-feature-item">
+                <i class="bi bi-link-45deg"></i>
+                <div>
+                  <strong>Permanent ownership</strong>
+                  <div class="text-secondary small">Every short link stays tied to your account.</div>
+                </div>
+              </div>
+              <div class="auth-feature-item">
+                <i class="bi bi-bar-chart-line-fill"></i>
+                <div>
+                  <strong>Private analytics</strong>
+                  <div class="text-secondary small">Track clicks, visits, and performance per link.</div>
+                </div>
+              </div>
+              <div class="auth-feature-item">
+                <i class="bi bi-shield-check"></i>
+                <div>
+                  <strong>Safer management</strong>
+                  <div class="text-secondary small">Only you can edit and remove your links.</div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="col-lg-7">
+          <section class="panel-card auth-form-panel p-4 p-lg-5 reveal h-100">
+            <div class="d-flex align-items-center justify-content-between gap-3 mb-4">
+              <div>
+                <h2 class="h4 mb-1">Sign in to SnapLink</h2>
+                <p class="text-secondary mb-0">Use your email and password to continue.</p>
+              </div>
+              <span class="auth-step-badge">Secure Session</span>
+            </div>
+
+            <% if (errorMessage) { %>
+            <div class="alert alert-danger d-flex align-items-start gap-2" role="alert">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span><%= errorMessage %></span>
+            </div>
+            <% } %>
+
+            <form method="POST" action="/login" class="d-flex flex-column gap-3" novalidate>
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <div>
+                <label class="form-label" for="email">Email address</label>
+                <input
+                  class="form-control form-control-lg"
+                  id="email"
+                  name="email"
+                  type="email"
+                  autocomplete="email"
+                  placeholder="you@example.com"
+                  required
+                  value="<%= formValues.email || '' %>"
+                />
+              </div>
+              <div>
+                <label class="form-label" for="password">Password</label>
+                <input
+                  class="form-control form-control-lg"
+                  id="password"
+                  name="password"
+                  type="password"
+                  autocomplete="current-password"
+                  placeholder="Enter your password"
+                  required
+                />
+              </div>
+              <button class="btn btn-gradient btn-lg auth-submit-btn" type="submit">
+                Sign In
+              </button>
+            </form>
+
+            <div class="auth-footer-note mt-4">
+              New here?
+              <a href="/signup" class="fw-semibold">Create an account</a>
+              and start shortening links in your own workspace.
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <%- include('partials/scripts') %>
+  </body>
+</html>

@@ -8,6 +8,18 @@ const activityLogSchema = new mongoose.Schema(
       enum: ["SHORTENED", "VISITED"],
       index: true,
     },
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+      index: true,
+    },
+    shortUrlId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ShortUrl",
+      default: null,
+      index: true,
+    },
     shortCode: {
       type: String,
       default: null,
@@ -45,6 +57,6 @@ const activityLogSchema = new mongoose.Schema(
 );
 
 activityLogSchema.index({ createdAt: -1 });
+activityLogSchema.index({ owner: 1, createdAt: -1 });
 
 module.exports = mongoose.model("ActivityLog", activityLogSchema);
-

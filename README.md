@@ -11,8 +11,14 @@ https://snaplink-9vc5.onrender.com/
 
 ## Features
 
+- Session-based authentication with signup, login, and logout
+- Account-scoped short links and private analytics dashboard
+- CSRF protection for form submissions
+- Route-level rate limiting for signup, login, and link creation
+- Optional custom aliases like `/summer-sale` for branded short links
+- QR code preview and download for every owned short link
 - Shorten long URLs into compact unique links
-- Reuse existing short URL when the same original URL is submitted
+- Reuse an existing default short URL when the same account submits the same original URL again
 - Redirect users from short link to original URL
 - Track URL activity:
   - URL creation actions
@@ -70,8 +76,11 @@ npm run dev
 
 ## Main Routes
 
-- `GET /` -> URL shortener page
-- `POST /shorten` -> creates/reuses short URL
-- `POST /urls/:urlId/delete` -> deletes an existing short URL
-- `GET /dashboard` -> analytics dashboard
-- `GET /:shortCode` -> redirect to original URL
+- `GET /` -> public landing page and authenticated creation workspace
+- `GET /login` -> sign-in page
+- `GET /signup` -> account creation page
+- `POST /shorten` -> creates or reuses a short URL for the logged-in user
+- `POST /urls/:urlId/delete` -> deletes one of the logged-in user's short URLs
+- `GET /urls/:urlId/qr` -> previews or downloads a QR code for one of the logged-in user's short URLs
+- `GET /dashboard` -> private analytics dashboard for the logged-in user
+- `GET /:shortCode` -> public redirect to the original URL

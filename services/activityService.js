@@ -3,6 +3,8 @@ const { getClientIp } = require("../utils/request");
 
 async function createActivityLog({
   type,
+  ownerId = null,
+  shortUrlId = null,
   shortCode = null,
   originalUrl = null,
   req,
@@ -11,6 +13,8 @@ async function createActivityLog({
   try {
     await ActivityLog.create({
       type,
+      owner: ownerId,
+      shortUrlId,
       shortCode,
       originalUrl,
       ipAddress: getClientIp(req),
@@ -26,4 +30,3 @@ async function createActivityLog({
 module.exports = {
   createActivityLog,
 };
-

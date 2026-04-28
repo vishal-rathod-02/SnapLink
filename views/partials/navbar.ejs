@@ -26,14 +26,52 @@
     </button>
     <div class="collapse navbar-collapse" id="mainNav">
       <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+        <% if (isAuthenticated) { %>
+        <li class="nav-item">
+          <a
+            class="nav-link <%= activePage === 'home' ? 'active' : '' %>"
+            href="/"
+          >
+            <i class="bi bi-stars"></i>Create
+          </a>
+        </li>
         <li class="nav-item">
           <a
             class="nav-link <%= activePage === 'dashboard' ? 'active' : '' %>"
             href="/dashboard"
           >
-            <i class="bi bi-speedometer2 me-1"></i>Dashboard
+            <i class="bi bi-speedometer2"></i>Dashboard
           </a>
         </li>
+        <li class="nav-item">
+          <span class="nav-user-chip">
+            <i class="bi bi-person-circle"></i>
+            <span><%= currentUser.name %></span>
+          </span>
+        </li>
+        <li class="nav-item">
+          <form method="POST" action="/logout" class="nav-action-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <button class="nav-action-btn" type="submit">
+              <i class="bi bi-box-arrow-right"></i>Logout
+            </button>
+          </form>
+        </li>
+        <% } else { %>
+        <li class="nav-item">
+          <a class="nav-link <%= activePage === 'login' ? 'active' : '' %>" href="/login">
+            <i class="bi bi-box-arrow-in-right"></i>Login
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link nav-link-cta <%= activePage === 'signup' ? 'active' : '' %>"
+            href="/signup"
+          >
+            <i class="bi bi-person-plus"></i>Create Account
+          </a>
+        </li>
+        <% } %>
         <li class="nav-item">
           <button
             id="themeToggle"

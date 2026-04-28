@@ -1,7 +1,17 @@
+const mongoose = require("mongoose");
+
 const ActivityLog = require("../models/ActivityLog");
 const ShortUrl = require("../models/ShortUrl");
 
 const DASHBOARD_TIMEZONE = process.env.DASHBOARD_TIMEZONE || "Asia/Kolkata";
+const DASHBOARD_PAGE_SIZE = 8;
+const DASHBOARD_SORT_MAP = {
+  newest: { createdAt: -1, _id: -1 },
+  oldest: { createdAt: 1, _id: 1 },
+  clicks_desc: { clicks: -1, createdAt: -1 },
+  clicks_asc: { clicks: 1, createdAt: -1 },
+  alias_az: { shortCode: 1, createdAt: -1 },
+};
 
 function toDateKeyInTimezone(date, timeZone) {
   const parts = new Intl.DateTimeFormat("en-US", {
@@ -50,9 +60,86 @@ function buildChartLabels(labels) {
   });
 }
 
-async function getDashboardSnapshot() {
+function toObjectId(value) {
+  if (!value) {
+    return null;
+  }
+
+  if (value instanceof mongoose.Types.ObjectId) {
+    return value;
+  }
+
+  return new mongoose.Types.ObjectId(String(value));
+}
+
+function escapeRegExp(value) {
+  return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function buildLibraryQuery(ownerObjectId, options = {}) {
+  const query = {
+    owner: ownerObjectId,
+  };
+
+  if (options.linkType === "custom") {
+    query.isCustomAlias = true;
+  } else if (options.linkType === "default") {
+    query.isCustomAlias = false;
+  }
+
+  if (options.searchTerm) {
+    const regex = new RegExp(escapeRegExp(options.searchTerm), "i");
+    query.$or = [{ shortCode: regex }, { originalUrl: regex }];
+  }
+
+  return query;
+}
+
+async function getDashboardSnapshot(ownerId, options = {}) {
+  const ownerObjectId = toObjectId(ownerId);
   const labels = buildLast7DayLabels(DASHBOARD_TIMEZONE);
+  const chartLabels = buildChartLabels(labels);
+  const currentPage = Math.max(1, Number(options.page) || 1);
+  const sortBy = DASHBOARD_SORT_MAP[options.sortBy] ? options.sortBy : "newest";
+
+  if (!ownerObjectId) {
+    return {
+      stats: {
+        totalUrls: 0,
+        totalClicks: 0,
+        totalActivities: 0,
+        avgClicksPerUrl: 0,
+      },
+      topUrls: [],
+      recentUrls: [],
+      recentActivity: [],
+      charts: {
+        labels: chartLabels,
+        urlSeries: labels.map(() => 0),
+        clickSeries: labels.map(() => 0),
+        maxDaily: 1,
+        totalCreatedInWindow: 0,
+        totalVisitsInWindow: 0,
+        hasTrendActivity: false,
+      },
+      management: {
+        items: [],
+        totalItems: 0,
+        pageSize: DASHBOARD_PAGE_SIZE,
+        currentPage: 1,
+        totalPages: 1,
+        appliedFilters: {
+          searchTerm: "",
+          linkType: "all",
+          sortBy: "newest",
+        },
+      },
+    };
+  }
+
   const startDate = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
+  const ownerMatch = { owner: ownerObjectId };
+  const libraryQuery = buildLibraryQuery(ownerObjectId, options);
 
   const [
     totalUrls,
@@ -63,15 +150,19 @@ async function getDashboardSnapshot() {
     recentActivity,
     creationRows,
     visitRows,
+    libraryTotalItems,
   ] = await Promise.all([
-    ShortUrl.countDocuments(),
-    ActivityLog.countDocuments(),
-    ShortUrl.aggregate([{ $group: { _id: null, clicks: { $sum: "$clicks" } } }]),
-    ShortUrl.find().sort({ clicks: -1, createdAt: -1 }).limit(6).lean(),
-    ShortUrl.find().sort({ createdAt: -1 }).limit(10).lean(),
-    ActivityLog.find().sort({ createdAt: -1 }).limit(12).lean(),
+    ShortUrl.countDocuments(ownerMatch),
+    ActivityLog.countDocuments(ownerMatch),
     ShortUrl.aggregate([
-      { $match: { createdAt: { $gte: startDate } } },
+      { $match: ownerMatch },
+      { $group: { _id: null, clicks: { $sum: "$clicks" } } },
+    ]),
+    ShortUrl.find(ownerMatch).sort({ clicks: -1, createdAt: -1 }).limit(6).lean(),
+    ShortUrl.find(ownerMatch).sort({ createdAt: -1 }).limit(10).lean(),
+    ActivityLog.find(ownerMatch).sort({ createdAt: -1 }).limit(12).lean(),
+    ShortUrl.aggregate([
+      { $match: { ...ownerMatch, createdAt: { $gte: startDate } } },
       {
         $group: {
           _id: {
@@ -87,7 +178,7 @@ async function getDashboardSnapshot() {
       { $sort: { _id: 1 } },
     ]),
     ActivityLog.aggregate([
-      { $match: { createdAt: { $gte: startDate }, type: "VISITED" } },
+      { $match: { ...ownerMatch, createdAt: { $gte: startDate }, type: "VISITED" } },
       {
         $group: {
           _id: {
@@ -102,7 +193,16 @@ async function getDashboardSnapshot() {
       },
       { $sort: { _id: 1 } },
     ]),
+    ShortUrl.countDocuments(libraryQuery),
   ]);
+
+  const totalPages = Math.max(1, Math.ceil(libraryTotalItems / DASHBOARD_PAGE_SIZE));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const managementItems = await ShortUrl.find(libraryQuery)
+    .sort(DASHBOARD_SORT_MAP[sortBy])
+    .skip((safeCurrentPage - 1) * DASHBOARD_PAGE_SIZE)
+    .limit(DASHBOARD_PAGE_SIZE)
+    .lean();
 
   const urlSeries = mapSeriesByLabel(creationRows, labels);
   const clickSeries = mapSeriesByLabel(visitRows, labels);
@@ -123,13 +223,25 @@ async function getDashboardSnapshot() {
     recentUrls,
     recentActivity,
     charts: {
-      labels: buildChartLabels(labels),
+      labels: chartLabels,
       urlSeries,
       clickSeries,
       maxDaily: Math.max(1, ...urlSeries, ...clickSeries),
       totalCreatedInWindow,
       totalVisitsInWindow,
       hasTrendActivity: totalCreatedInWindow + totalVisitsInWindow > 0,
+    },
+    management: {
+      items: managementItems,
+      totalItems: libraryTotalItems,
+      pageSize: DASHBOARD_PAGE_SIZE,
+      currentPage: safeCurrentPage,
+      totalPages,
+      appliedFilters: {
+        searchTerm: options.searchTerm || "",
+        linkType: options.linkType || "all",
+        sortBy,
+      },
     },
   };
 }

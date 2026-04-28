@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('partials/head') %>
+  </head>
+  <body>
+    <%- include('partials/navbar', { activePage }) %>
+
+    <main class="container py-5">
+      <%- include('partials/flash-messages') %>
+
+      <section class="row g-4 align-items-stretch auth-layout">
+        <div class="col-lg-5">
+          <article class="panel-card auth-side-panel p-4 p-lg-5 reveal h-100">
+            <span class="auth-kicker">Create Account</span>
+            <h1 class="hero-title h2 mt-3 mb-3"><%= heading %></h1>
+            <p class="lead text-secondary mb-4"><%= subheading %></p>
+            <div class="row g-3">
+              <div class="col-sm-6 col-lg-12">
+                <div class="auth-stat-card">
+                  <span class="auth-stat-label">Save Links</span>
+                  <strong>One personal library</strong>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-12">
+                <div class="auth-stat-card">
+                  <span class="auth-stat-label">Track Clicks</span>
+                  <strong>Private analytics view</strong>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-12">
+                <div class="auth-stat-card">
+                  <span class="auth-stat-label">Manage Access</span>
+                  <strong>Delete and organize anytime</strong>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="col-lg-7">
+          <section class="panel-card auth-form-panel p-4 p-lg-5 reveal h-100">
+            <div class="d-flex align-items-center justify-content-between gap-3 mb-4">
+              <div>
+                <h2 class="h4 mb-1">Create your SnapLink account</h2>
+                <p class="text-secondary mb-0">Start with the basics and get your private dashboard ready.</p>
+              </div>
+              <span class="auth-step-badge">Quick Setup</span>
+            </div>
+
+            <% if (errorMessage) { %>
+            <div class="alert alert-danger d-flex align-items-start gap-2" role="alert">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span><%= errorMessage %></span>
+            </div>
+            <% } %>
+
+            <form method="POST" action="/signup" class="d-flex flex-column gap-3" novalidate>
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+              <div>
+                <label class="form-label" for="name">Full name</label>
+                <input
+                  class="form-control form-control-lg"
+                  id="name"
+                  name="name"
+                  type="text"
+                  autocomplete="name"
+                  placeholder="Your name"
+                  required
+                  value="<%= formValues.name || '' %>"
+                />
+              </div>
+              <div>
+                <label class="form-label" for="email">Email address</label>
+                <input
+                  class="form-control form-control-lg"
+                  id="email"
+                  name="email"
+                  type="email"
+                  autocomplete="email"
+                  placeholder="you@example.com"
+                  required
+                  value="<%= formValues.email || '' %>"
+                />
+              </div>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label" for="password">Password</label>
+                  <input
+                    class="form-control form-control-lg"
+                    id="password"
+                    name="password"
+                    type="password"
+                    autocomplete="new-password"
+                    placeholder="At least 8 characters"
+                    required
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="confirmPassword">Confirm password</label>
+                  <input
+                    class="form-control form-control-lg"
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    autocomplete="new-password"
+                    placeholder="Repeat your password"
+                    required
+                  />
+                </div>
+              </div>
+              <button class="btn btn-gradient btn-lg auth-submit-btn" type="submit">
+                Create Account
+              </button>
+            </form>
+
+            <div class="auth-footer-note mt-4">
+              Already have an account?
+              <a href="/login" class="fw-semibold">Sign in here</a>
+              to continue with your links.
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <%- include('partials/scripts') %>
+  </body>
+</html>

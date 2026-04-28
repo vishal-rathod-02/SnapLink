@@ -7,6 +7,8 @@
     <%- include('partials/navbar', { activePage }) %>
 
     <main class="container py-5">
+      <%- include('partials/flash-messages') %>
+
       <section class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 reveal">
         <div>
           <h1 class="display-6 fw-bold mb-1">Analytics Dashboard</h1>
@@ -22,19 +24,19 @@
       <section class="row g-3 mb-4">
         <div class="col-sm-6 col-xl-3">
           <article class="metric-card h-100 reveal">
-            <div class="metric-label">Total URLs</div>
+            <div class="metric-label">Your URLs</div>
             <div class="metric-value"><%= formatNumber(stats.totalUrls) %></div>
           </article>
         </div>
         <div class="col-sm-6 col-xl-3">
           <article class="metric-card h-100 reveal">
-            <div class="metric-label">Total Clicks</div>
+            <div class="metric-label">Your Clicks</div>
             <div class="metric-value"><%= formatNumber(stats.totalClicks) %></div>
           </article>
         </div>
         <div class="col-sm-6 col-xl-3">
           <article class="metric-card h-100 reveal">
-            <div class="metric-label">Activity Logs</div>
+            <div class="metric-label">Your Activity</div>
             <div class="metric-value"><%= formatNumber(stats.totalActivities) %></div>
           </article>
         </div>
@@ -112,9 +114,14 @@
               <% topUrls.forEach((url) => { %>
               <div class="top-link-item">
                 <div class="d-flex justify-content-between gap-3 small mb-1">
-                  <a href="<%= baseUrl %>/<%= url.shortCode %>" target="_blank" class="text-truncate">
-                    <%= baseUrl %>/<%= url.shortCode %>
-                  </a>
+                  <div class="d-flex align-items-center gap-2 min-w-0">
+                    <a href="<%= baseUrl %>/<%= url.shortCode %>" target="_blank" class="text-truncate">
+                      <%= baseUrl %>/<%= url.shortCode %>
+                    </a>
+                    <% if (url.isCustomAlias) { %>
+                    <span class="badge text-bg-primary badge-inline-link">Custom</span>
+                    <% } %>
+                  </div>
                   <strong><%= formatNumber(url.clicks) %> clicks</strong>
                 </div>
                 <div class="progress modern-progress" role="progressbar" aria-valuenow="<%= url.clicks %>" aria-valuemin="0" aria-valuemax="<%= maxClicks %>">
@@ -131,6 +138,192 @@
         </div>
       </section>
 
+      <section class="panel-card p-4 p-lg-5 mb-4 reveal library-management-panel">
+        <% const libraryStart = management.totalItems ? ((management.currentPage - 1) * management.pageSize) + 1 : 0; %>
+        <% const libraryEnd = management.totalItems ? Math.min(management.totalItems, management.currentPage * management.pageSize) : 0; %>
+        <% const hasActiveLibraryFilters = dashboardQuery.searchTerm || dashboardQuery.linkType !== 'all' || dashboardQuery.sortBy !== 'newest'; %>
+        <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-4">
+          <div>
+            <h2 class="h4 mb-1">Manage Link Library</h2>
+            <p class="text-secondary mb-0">
+              Search, filter, sort, and page through every short link in your account.
+            </p>
+          </div>
+          <span class="library-summary-chip">
+            Showing <strong><%= libraryStart %>-<%= libraryEnd %></strong> of
+            <strong><%= formatNumber(management.totalItems) %></strong>
+          </span>
+        </div>
+
+        <form method="GET" action="/dashboard" class="row g-3 align-items-end dashboard-filter-form mb-4">
+          <div class="col-xl-5">
+            <label class="form-label dashboard-filter-label" for="dashboardSearch">Search links</label>
+            <div class="input-group filter-input-group">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input
+                id="dashboardSearch"
+                class="form-control"
+                type="search"
+                name="q"
+                placeholder="Search by alias or original URL"
+                value="<%= dashboardQuery.searchTerm || '' %>"
+              />
+            </div>
+          </div>
+          <div class="col-sm-6 col-xl-2">
+            <label class="form-label dashboard-filter-label" for="dashboardLinkType">Link type</label>
+            <select id="dashboardLinkType" class="form-select" name="linkType">
+              <option value="all" <%= dashboardQuery.linkType === 'all' ? 'selected' : '' %>>All links</option>
+              <option value="custom" <%= dashboardQuery.linkType === 'custom' ? 'selected' : '' %>>Custom alias</option>
+              <option value="default" <%= dashboardQuery.linkType === 'default' ? 'selected' : '' %>>Default code</option>
+            </select>
+          </div>
+          <div class="col-sm-6 col-xl-3">
+            <label class="form-label dashboard-filter-label" for="dashboardSort">Sort by</label>
+            <select id="dashboardSort" class="form-select" name="sort">
+              <option value="newest" <%= dashboardQuery.sortBy === 'newest' ? 'selected' : '' %>>Newest first</option>
+              <option value="oldest" <%= dashboardQuery.sortBy === 'oldest' ? 'selected' : '' %>>Oldest first</option>
+              <option value="clicks_desc" <%= dashboardQuery.sortBy === 'clicks_desc' ? 'selected' : '' %>>Most clicks</option>
+              <option value="clicks_asc" <%= dashboardQuery.sortBy === 'clicks_asc' ? 'selected' : '' %>>Least clicks</option>
+              <option value="alias_az" <%= dashboardQuery.sortBy === 'alias_az' ? 'selected' : '' %>>Alias A-Z</option>
+            </select>
+          </div>
+          <div class="col-xl-2">
+            <div class="d-grid gap-2 dashboard-filter-actions">
+              <button class="btn btn-gradient" type="submit">
+                <i class="bi bi-funnel me-1"></i>Apply
+              </button>
+              <% if (hasActiveLibraryFilters) { %>
+              <a href="<%= dashboardResetUrl %>" class="btn btn-outline-dark">Reset</a>
+              <% } %>
+            </div>
+          </div>
+        </form>
+
+        <% if (!management.items.length) { %>
+        <div class="empty-state">
+          <i class="bi bi-sliders"></i>
+          <p class="mb-0">
+            <%= hasActiveLibraryFilters ? 'No links match the current search and filter settings.' : 'No links available to manage yet.' %>
+          </p>
+        </div>
+        <% } else { %>
+        <div class="table-responsive recent-table-shell library-table-shell">
+          <table class="table table-modern align-middle library-table">
+            <thead>
+              <tr>
+                <th>Short Link</th>
+                <th>Type</th>
+                <th>Original URL</th>
+                <th>Clicks</th>
+                <th>Created</th>
+                <th>Last Visit</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% management.items.forEach((url) => { %>
+              <tr>
+                <td>
+                  <a href="<%= baseUrl %>/<%= url.shortCode %>" target="_blank" class="fw-semibold">
+                    <%= baseUrl %>/<%= url.shortCode %>
+                  </a>
+                </td>
+                <td>
+                  <span class="badge <%= url.isCustomAlias ? 'text-bg-primary' : 'text-bg-secondary' %>">
+                    <%= url.isCustomAlias ? 'Custom' : 'Default' %>
+                  </span>
+                </td>
+                <td class="text-break"><%= url.originalUrl %></td>
+                <td>
+                  <span class="data-pill"><%= formatNumber(url.clicks) %></span>
+                </td>
+                <td><%= formatDate(url.createdAt) %></td>
+                <td><%= url.lastVisitedAt ? formatRelativeTime(url.lastVisitedAt) : 'Never' %></td>
+                <td class="text-end">
+                  <div class="d-inline-flex flex-wrap justify-content-end gap-2">
+                    <button
+                      class="btn btn-sm btn-outline-primary"
+                      data-copy="<%= baseUrl %>/<%= url.shortCode %>"
+                      type="button"
+                      data-bs-toggle="tooltip"
+                      data-bs-title="Copy short URL"
+                    >
+                      <i class="bi bi-clipboard"></i>
+                    </button>
+                    <a
+                      class="btn btn-sm btn-outline-primary qr-inline-action"
+                      href="/urls/<%= url._id %>/qr?format=svg&size=220"
+                      target="_blank"
+                      data-bs-toggle="tooltip"
+                      data-bs-title="Open QR preview"
+                    >
+                      <i class="bi bi-qr-code"></i>
+                    </a>
+                    <a class="btn btn-sm btn-outline-dark" href="<%= baseUrl %>/<%= url.shortCode %>" target="_blank">
+                      Open
+                    </a>
+                    <form
+                      method="POST"
+                      action="/urls/<%= url._id %>/delete"
+                      class="d-inline-flex js-delete-url-form"
+                    >
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                      <input type="hidden" name="redirectTo" value="<%= dashboardUrl %>" />
+                      <button
+                        class="btn btn-sm btn-delete-link"
+                        type="button"
+                        data-delete-url-trigger
+                        data-short-url="<%= baseUrl %>/<%= url.shortCode %>"
+                        data-original-url="<%= url.originalUrl %>"
+                      >
+                        <i class="bi bi-trash3 me-1"></i>Delete
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+
+        <% if (management.totalPages > 1) { %>
+        <nav class="library-pagination-nav mt-4" aria-label="Dashboard library pagination">
+          <div class="library-pagination-copy">
+            Page <strong><%= management.currentPage %></strong> of
+            <strong><%= management.totalPages %></strong>
+          </div>
+          <ul class="pagination pagination-modern mb-0">
+            <li class="page-item <%= !dashboardPrevUrl ? 'disabled' : '' %>">
+              <% if (dashboardPrevUrl) { %>
+              <a class="page-link" href="<%= dashboardPrevUrl %>">Previous</a>
+              <% } else { %>
+              <span class="page-link">Previous</span>
+              <% } %>
+            </li>
+            <% dashboardPagination.forEach((pageItem) => { %>
+            <li class="page-item <%= pageItem.isCurrent ? 'active' : '' %>">
+              <% if (pageItem.isCurrent) { %>
+              <span class="page-link"><%= pageItem.number %></span>
+              <% } else { %>
+              <a class="page-link" href="<%= pageItem.url %>"><%= pageItem.number %></a>
+              <% } %>
+            </li>
+            <% }) %>
+            <li class="page-item <%= !dashboardNextUrl ? 'disabled' : '' %>">
+              <% if (dashboardNextUrl) { %>
+              <a class="page-link" href="<%= dashboardNextUrl %>">Next</a>
+              <% } else { %>
+              <span class="page-link">Next</span>
+              <% } %>
+            </li>
+          </ul>
+        </nav>
+        <% } %>
+        <% } %>
+      </section>
+
       <section class="row g-4 align-items-start">
         <div class="col-lg-6">
           <article class="panel-card p-4 reveal">
@@ -145,9 +338,14 @@
               <% recentUrls.forEach((url) => { %>
               <div class="list-row">
                 <div>
-                  <a href="<%= baseUrl %>/<%= url.shortCode %>" target="_blank" class="fw-semibold">
-                    <%= baseUrl %>/<%= url.shortCode %>
-                  </a>
+                  <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <a href="<%= baseUrl %>/<%= url.shortCode %>" target="_blank" class="fw-semibold">
+                      <%= baseUrl %>/<%= url.shortCode %>
+                    </a>
+                    <% if (url.isCustomAlias) { %>
+                    <span class="badge text-bg-primary badge-inline-link">Custom</span>
+                    <% } %>
+                  </div>
                   <div class="text-secondary small text-break"><%= url.originalUrl %></div>
                 </div>
                 <div class="text-end small">
@@ -198,6 +396,9 @@
         </div>
       </section>
     </main>
+
+    <%- include('partials/delete-confirm-modal') %>
+    <%- include('partials/copy-feedback') %>
 
     <%- include('partials/scripts') %>
   </body>

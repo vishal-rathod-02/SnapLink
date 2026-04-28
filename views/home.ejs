@@ -7,6 +7,8 @@
     <%- include('partials/navbar', { activePage }) %>
 
     <main class="container py-5">
+      <%- include('partials/flash-messages') %>
+
       <section class="hero-panel panel-card p-4 p-lg-5 mb-4 reveal">
         <div class="row align-items-center g-4">
           <div class="col-lg-7">
@@ -29,13 +31,13 @@
             <div class="row g-3">
               <div class="col-6">
                 <article class="metric-card h-100">
-                  <div class="metric-label">Total Links</div>
+                  <div class="metric-label"><%= currentUser ? 'Your Links' : 'Platform Links' %></div>
                   <div class="metric-value"><%= formatNumber(stats.totalUrls) %></div>
                 </article>
               </div>
               <div class="col-6">
                 <article class="metric-card h-100">
-                  <div class="metric-label">Total Clicks</div>
+                  <div class="metric-label"><%= currentUser ? 'Your Clicks' : 'Platform Clicks' %></div>
                   <div class="metric-value"><%= formatNumber(stats.totalClicks) %></div>
                 </article>
               </div>
@@ -45,27 +47,55 @@
       </section>
 
       <section class="panel-card create-url-panel p-4 p-lg-5 mb-4 reveal">
+        <% if (currentUser) { %>
         <h2 class="h4 mb-3">Create your short URL</h2>
-        <form method="POST" action="/shorten" id="shortenForm" novalidate>
-          <div class="input-group input-group-lg modern-input-group">
-            <span class="input-group-text"><i class="bi bi-globe-americas"></i></span>
-            <input
-              type="text"
-              class="form-control"
-              id="originalUrl"
-              name="originalUrl"
-              placeholder="https://example.com/your-very-long-url"
-              required
-              value="<%= previousInput %>"
-            />
-            <button class="btn btn-gradient px-4 btn-generate" type="submit">
-              <span class="btn-label">Generate</span>
-              <span class="btn-loader" aria-hidden="true">
-                <span></span>
-                <span></span>
-                <span></span>
-              </span>
-            </button>
+        <form method="POST" action="/shorten" id="shortenForm" class="d-flex flex-column gap-3" novalidate>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+          <div>
+            <label class="form-label create-form-label" for="originalUrl">Destination URL</label>
+            <div class="input-group input-group-lg modern-input-group">
+              <span class="input-group-text"><i class="bi bi-globe-americas"></i></span>
+              <input
+                type="text"
+                class="form-control"
+                id="originalUrl"
+                name="originalUrl"
+                placeholder="https://example.com/your-very-long-url"
+                required
+                value="<%= previousInput %>"
+              />
+              <button class="btn btn-gradient px-4 btn-generate" type="submit">
+                <span class="btn-label">Generate</span>
+                <span class="btn-loader" aria-hidden="true">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div class="alias-field-shell">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+              <label class="form-label create-form-label mb-0" for="customAlias">Custom alias</label>
+              <span class="alias-optional-chip">Optional</span>
+            </div>
+            <div class="input-group alias-input-group">
+              <span class="input-group-text">/</span>
+              <input
+                type="text"
+                class="form-control"
+                id="customAlias"
+                name="customAlias"
+                placeholder="summer-sale"
+                maxlength="32"
+                value="<%= previousAlias %>"
+              />
+            </div>
+            <div class="form-text alias-help-text">
+              Use 3 to 32 letters, numbers, hyphens, or underscores. We automatically reserve app route names.
+            </div>
           </div>
         </form>
 
@@ -75,12 +105,58 @@
           <span><%= errorMessage %></span>
         </div>
         <% } %>
+        <% } else { %>
+        <div class="guest-create-shell">
+          <div class="guest-create-copy">
+            <span class="guest-create-kicker">Account Required</span>
+            <h2 class="h3 mb-3">Create short links inside your own private workspace</h2>
+            <p class="lead text-secondary mb-0">
+              Sign in before generating links so every URL stays owned by you, analytics stay
+              private, and management actions remain secure.
+            </p>
+          </div>
+          <div class="guest-cta-actions">
+            <a href="/signup" class="btn btn-gradient btn-lg">Create Account</a>
+            <a href="/login" class="btn btn-outline-dark btn-lg">Sign In</a>
+          </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+          <div class="col-md-4">
+            <article class="guest-feature-card h-100">
+              <i class="bi bi-folder2-open"></i>
+              <h3 class="h6 mb-2">Owned link library</h3>
+              <p class="mb-0 text-secondary small">
+                Save every generated URL to your own account instead of a shared public pool.
+              </p>
+            </article>
+          </div>
+          <div class="col-md-4">
+            <article class="guest-feature-card h-100">
+              <i class="bi bi-graph-up-arrow"></i>
+              <h3 class="h6 mb-2">Private analytics</h3>
+              <p class="mb-0 text-secondary small">
+                Track clicks, activity, and top performers without exposing your data to everyone.
+              </p>
+            </article>
+          </div>
+          <div class="col-md-4">
+            <article class="guest-feature-card h-100">
+              <i class="bi bi-shield-lock"></i>
+              <h3 class="h6 mb-2">Secure management</h3>
+              <p class="mb-0 text-secondary small">
+                Delete, revisit, and manage your links only after authentication.
+              </p>
+            </article>
+          </div>
+        </div>
+        <% } %>
       </section>
 
       <% if (shortResult) { %>
       <section class="panel-card p-4 mb-4 reveal success-panel">
-        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-start">
-          <div>
+        <div class="success-panel-layout">
+          <div class="success-panel-copy">
             <div class="d-flex align-items-center gap-2 mb-2">
               <span class="success-dot"></span>
               <h3 class="h5 mb-0">Short URL ready</h3>
@@ -89,6 +165,9 @@
               <% } else { %>
               <span class="badge text-bg-success">New link created</span>
               <% } %>
+              <% if (shortResult.isCustomAlias) { %>
+              <span class="badge text-bg-primary">Custom alias</span>
+              <% } %>
             </div>
             <a class="short-link fw-semibold fs-5" href="<%= shortResult.shortUrl %>" target="_blank">
               <%= shortResult.shortUrl %>
@@ -96,25 +175,54 @@
             <p class="mb-0 mt-2 text-secondary text-break">
               Original: <%= shortResult.originalUrl %>
             </p>
+            <div class="success-panel-actions">
+              <button
+                class="btn btn-outline-primary"
+                data-copy="<%= shortResult.shortUrl %>"
+                type="button"
+                data-bs-toggle="tooltip"
+                data-bs-title="Copy short URL"
+              >
+                <i class="bi bi-clipboard me-1"></i>Copy
+              </button>
+              <a class="btn btn-primary" href="<%= shortResult.shortUrl %>" target="_blank">
+                Open
+              </a>
+            </div>
           </div>
-          <div class="d-flex gap-2">
-            <button
-              class="btn btn-outline-primary"
-              data-copy="<%= shortResult.shortUrl %>"
-              type="button"
-              data-bs-toggle="tooltip"
-              data-bs-title="Copy short URL"
-            >
-              <i class="bi bi-clipboard"></i>
-            </button>
-            <a class="btn btn-primary" href="<%= shortResult.shortUrl %>" target="_blank">
-              Open
-            </a>
-          </div>
+
+          <article class="qr-preview-card">
+            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+              <div>
+                <span class="qr-preview-kicker">Quick Share</span>
+                <h4 class="h6 mb-0 mt-2">QR code for this link</h4>
+              </div>
+              <i class="bi bi-qr-code qr-preview-icon" aria-hidden="true"></i>
+            </div>
+            <div class="qr-preview-frame">
+              <img
+                src="<%= shortResult.qrPreviewUrl %>"
+                alt="QR code preview for <%= shortResult.shortUrl %>"
+                loading="lazy"
+              />
+            </div>
+            <div class="qr-preview-actions">
+              <a class="btn btn-outline-primary" href="<%= shortResult.qrPreviewUrl %>" target="_blank">
+                Preview
+              </a>
+              <a class="btn btn-outline-dark" href="<%= shortResult.qrPngDownloadUrl %>">
+                PNG
+              </a>
+              <a class="btn btn-outline-dark" href="<%= shortResult.qrSvgDownloadUrl %>">
+                SVG
+              </a>
+            </div>
+          </article>
         </div>
       </section>
       <% } %>
 
+      <% if (currentUser) { %>
       <section class="panel-card p-4 p-lg-5 reveal recent-links-card">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
           <h2 class="h4 mb-0">Recently generated links</h2>
@@ -147,6 +255,9 @@
                   <a href="<%= baseUrl %>/<%= url.shortCode %>" target="_blank">
                     <%= baseUrl %>/<%= url.shortCode %>
                   </a>
+                  <% if (url.isCustomAlias) { %>
+                  <span class="badge text-bg-primary badge-inline-link">Custom</span>
+                  <% } %>
                 </td>
                 <td class="text-break"><%= url.originalUrl %></td>
                 <td>
@@ -154,22 +265,34 @@
                 </td>
                 <td><%= formatDate(url.createdAt) %></td>
                 <td class="text-end">
-                  <form
-                    method="POST"
-                    action="/urls/<%= url._id %>/delete"
-                    class="d-inline-flex js-delete-url-form"
-                  >
-                    <input type="hidden" name="redirectTo" value="/" />
-                    <button
-                      class="btn btn-sm btn-delete-link"
-                      type="button"
-                      data-delete-url-trigger
-                      data-short-url="<%= baseUrl %>/<%= url.shortCode %>"
-                      data-original-url="<%= url.originalUrl %>"
+                  <div class="d-inline-flex flex-wrap justify-content-end gap-2">
+                    <a
+                      class="btn btn-sm btn-outline-primary qr-inline-action"
+                      href="/urls/<%= url._id %>/qr?format=svg&size=220"
+                      target="_blank"
+                      data-bs-toggle="tooltip"
+                      data-bs-title="Open QR preview"
                     >
-                      <i class="bi bi-trash3 me-1"></i>Delete
-                    </button>
-                  </form>
+                      <i class="bi bi-qr-code"></i>
+                    </a>
+                    <form
+                      method="POST"
+                      action="/urls/<%= url._id %>/delete"
+                      class="d-inline-flex js-delete-url-form"
+                    >
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                      <input type="hidden" name="redirectTo" value="/" />
+                      <button
+                        class="btn btn-sm btn-delete-link"
+                        type="button"
+                        data-delete-url-trigger
+                        data-short-url="<%= baseUrl %>/<%= url.shortCode %>"
+                        data-original-url="<%= url.originalUrl %>"
+                      >
+                        <i class="bi bi-trash3 me-1"></i>Delete
+                      </button>
+                    </form>
+                  </div>
                 </td>
               </tr>
               <% }) %>
@@ -178,51 +301,56 @@
         </div>
         <% } %>
       </section>
+      <% } else { %>
+      <section class="panel-card p-4 p-lg-5 reveal recent-links-card">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+          <div>
+            <h2 class="h4 mb-1">Why the app asks you to sign in first</h2>
+            <p class="text-secondary mb-0">
+              Authentication keeps link ownership clear, protects analytics, and prevents the
+              shortener from becoming an open spam endpoint.
+            </p>
+          </div>
+          <a href="/signup" class="btn btn-gradient">
+            Start Your Workspace <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-4">
+            <article class="metric-card h-100">
+              <div class="metric-label">Owned by You</div>
+              <div class="h5 mb-2">Personal dashboard</div>
+              <p class="mb-0 text-secondary small">
+                Your links, clicks, and activity history stay scoped to your account.
+              </p>
+            </article>
+          </div>
+          <div class="col-md-4">
+            <article class="metric-card h-100">
+              <div class="metric-label">Protected Flow</div>
+              <div class="h5 mb-2">Safer creation</div>
+              <p class="mb-0 text-secondary small">
+                Requiring login reduces abuse and keeps production usage easier to moderate.
+              </p>
+            </article>
+          </div>
+          <div class="col-md-4">
+            <article class="metric-card h-100">
+              <div class="metric-label">Ready for Growth</div>
+              <div class="h5 mb-2">Premium features</div>
+              <p class="mb-0 text-secondary small">
+                Account-based links unlock custom aliases, exports, QR codes, and richer analytics.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+      <% } %>
     </main>
 
-    <div
-      id="deleteConfirmModal"
-      class="delete-confirm-modal"
-      aria-hidden="true"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="deleteConfirmTitle"
-    >
-      <div class="delete-confirm-backdrop" data-delete-modal-close></div>
-      <div class="delete-confirm-card" role="document">
-        <button
-          type="button"
-          class="delete-confirm-close"
-          aria-label="Close"
-          data-delete-modal-close
-        >
-          <i class="bi bi-x-lg"></i>
-        </button>
-        <div class="delete-confirm-icon" aria-hidden="true">
-          <i class="bi bi-trash3-fill"></i>
-        </div>
-        <h3 class="h5 mb-2" id="deleteConfirmTitle">Delete this short URL?</h3>
-        <p class="text-secondary mb-3">
-          This action cannot be undone. The short link will stop redirecting immediately.
-        </p>
-        <div class="delete-confirm-preview mb-3">
-          <div class="delete-confirm-label">Short URL</div>
-          <div id="deleteConfirmShortUrl" class="delete-confirm-value text-break"></div>
-          <div class="delete-confirm-label mt-2">Original URL</div>
-          <div id="deleteConfirmOriginalUrl" class="delete-confirm-value text-break"></div>
-        </div>
-        <div class="d-flex justify-content-end gap-2">
-          <button type="button" class="btn btn-outline-dark" data-delete-modal-close>
-            Cancel
-          </button>
-          <button type="button" class="btn btn-delete-solid" id="deleteConfirmSubmit">
-            <i class="bi bi-trash3 me-1"></i>Delete Link
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div id="copyFeedback" class="copy-feedback" role="status" aria-live="polite"></div>
+    <%- include('partials/delete-confirm-modal') %>
+    <%- include('partials/copy-feedback') %>
 
     <%- include('partials/scripts') %>
   </body>

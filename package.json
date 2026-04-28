@@ -13,10 +13,14 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "connect-mongo": "^6.0.0",
     "dotenv": "^17.4.2",
     "ejs": "^5.0.2",
     "express": "^5.2.1",
+    "express-session": "^1.19.0",
     "mongoose": "^9.5.0",
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "qrcode": "^1.5.4"
   }
 }
