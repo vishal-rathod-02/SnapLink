@@ -7,8 +7,7 @@ Modern URL shortener built with:
 - MongoDB + Mongoose (database)
 
 ## 🌐 Live Demo
-https://snaplink-1-achs.onrender.com
-
+https://snaplink-uf6o.onrender.com/
 ## Features
 
 - Session-based authentication with signup, login, and logout
