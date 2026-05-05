@@ -7,7 +7,7 @@ Modern URL shortener built with:
 - MongoDB + Mongoose (database)
 
 ## 🌐 Live Demo
-https://snaplink-9vc5.onrender.com/
+https://snaplink-1-achs.onrender.com
 
 ## Features
 
