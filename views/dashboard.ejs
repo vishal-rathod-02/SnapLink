@@ -253,10 +253,21 @@
                     </button>
                     <a
                       class="btn btn-sm btn-outline-primary qr-inline-action"
-                      href="/urls/<%= url._id %>/qr?format=svg&size=220"
-                      target="_blank"
+                      href="#"
+                      role="button"
+                      data-qr-preview-trigger
+                      data-qr-image-url="/urls/<%= url._id %>/qr?format=svg&size=220"
+                      data-qr-short-url="<%= baseUrl %>/<%= url.shortCode %>"
+                      data-qr-original-url="<%= url.originalUrl %>"
+                      data-qr-type="<%= url.isCustomAlias ? 'Custom alias' : 'Default code' %>"
+                      data-qr-clicks="<%= formatNumber(url.clicks) %>"
+                      data-qr-created="<%= formatDate(url.createdAt) %>"
+                      data-qr-last-visit="<%= url.lastVisitedAt ? formatRelativeTime(url.lastVisitedAt) : 'Not visited yet' %>"
+                      data-qr-download-png="/urls/<%= url._id %>/qr?format=png&size=320&download=1"
+                      data-qr-download-svg="/urls/<%= url._id %>/qr?format=svg&size=320&download=1"
+                      data-qr-open-url="<%= baseUrl %>/<%= url.shortCode %>"
                       data-bs-toggle="tooltip"
-                      data-bs-title="Open QR preview"
+                      data-bs-title="Preview QR"
                     >
                       <i class="bi bi-qr-code"></i>
                     </a>
@@ -398,6 +409,7 @@
     </main>
 
     <%- include('partials/delete-confirm-modal') %>
+    <%- include('partials/qr-preview-modal') %>
     <%- include('partials/copy-feedback') %>
 
     <%- include('partials/scripts') %>

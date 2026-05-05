@@ -182,11 +182,23 @@
     "deleteConfirmOriginalUrl",
   );
   const deleteConfirmSubmitBtn = document.getElementById("deleteConfirmSubmit");
+  const qrPreviewModal = document.getElementById("qrPreviewModal");
+  const qrPreviewImage = document.getElementById("qrPreviewImage");
+  const qrPreviewShortUrl = document.getElementById("qrPreviewShortUrl");
+  const qrPreviewCopyButton = document.getElementById("qrPreviewCopyButton");
+  const qrPreviewOpenLink = document.getElementById("qrPreviewOpenLink");
+  const qrPreviewPngLink = document.getElementById("qrPreviewPngLink");
+  const qrPreviewSvgLink = document.getElementById("qrPreviewSvgLink");
   let pendingDeleteForm = null;
   let lastDeleteTrigger = null;
+  let lastQrTrigger = null;
 
   function isDeleteModalOpen() {
     return deleteConfirmModal?.classList.contains("is-open");
+  }
+
+  function isQrPreviewModalOpen() {
+    return qrPreviewModal?.classList.contains("is-open");
   }
 
   function closeDeleteModal() {
@@ -207,6 +219,25 @@
     if (lastDeleteTrigger) {
       lastDeleteTrigger.focus();
       lastDeleteTrigger = null;
+    }
+  }
+
+  function closeQrPreviewModal() {
+    if (!qrPreviewModal) {
+      return;
+    }
+
+    qrPreviewModal.classList.remove("is-open");
+    qrPreviewModal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("qr-preview-modal-open");
+
+    if (qrPreviewImage) {
+      qrPreviewImage.removeAttribute("src");
+    }
+
+    if (lastQrTrigger) {
+      lastQrTrigger.focus();
+      lastQrTrigger = null;
     }
   }
 
@@ -235,10 +266,56 @@
     deleteConfirmSubmitBtn.focus();
   }
 
+  function openQrPreviewModal(trigger) {
+    if (!qrPreviewModal || !trigger) {
+      return;
+    }
+
+    const imageUrl = trigger.getAttribute("data-qr-image-url") || "";
+    const shortUrl = trigger.getAttribute("data-qr-short-url") || "Unavailable";
+    const downloadPng = trigger.getAttribute("data-qr-download-png") || "#";
+    const downloadSvg = trigger.getAttribute("data-qr-download-svg") || "#";
+    const openUrl = trigger.getAttribute("data-qr-open-url") || "#";
+
+    lastQrTrigger = trigger;
+
+    if (qrPreviewImage) {
+      qrPreviewImage.setAttribute("src", imageUrl);
+      qrPreviewImage.setAttribute("alt", `QR code preview for ${shortUrl}`);
+    }
+    if (qrPreviewShortUrl) {
+      qrPreviewShortUrl.textContent = shortUrl;
+    }
+    if (qrPreviewCopyButton) {
+      qrPreviewCopyButton.setAttribute("data-copy-text", shortUrl);
+    }
+    if (qrPreviewOpenLink) {
+      qrPreviewOpenLink.setAttribute("href", openUrl);
+    }
+    if (qrPreviewPngLink) {
+      qrPreviewPngLink.setAttribute("href", downloadPng);
+    }
+    if (qrPreviewSvgLink) {
+      qrPreviewSvgLink.setAttribute("href", downloadSvg);
+    }
+
+    qrPreviewModal.classList.add("is-open");
+    qrPreviewModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("qr-preview-modal-open");
+    qrPreviewCopyButton?.focus();
+  }
+
   document.querySelectorAll("[data-delete-url-trigger]").forEach((trigger) => {
     trigger.addEventListener("click", () => {
       const form = trigger.closest("form");
       openDeleteModal({ form, trigger });
+    });
+  });
+
+  document.querySelectorAll("[data-qr-preview-trigger]").forEach((trigger) => {
+    trigger.addEventListener("click", (event) => {
+      event.preventDefault();
+      openQrPreviewModal(trigger);
     });
   });
 
@@ -250,6 +327,18 @@
     deleteConfirmModal.addEventListener("click", (event) => {
       if (event.target === deleteConfirmModal) {
         closeDeleteModal();
+      }
+    });
+  }
+
+  document.querySelectorAll("[data-qr-modal-close]").forEach((closeBtn) => {
+    closeBtn.addEventListener("click", closeQrPreviewModal);
+  });
+
+  if (qrPreviewModal) {
+    qrPreviewModal.addEventListener("click", (event) => {
+      if (event.target === qrPreviewModal) {
+        closeQrPreviewModal();
       }
     });
   }
@@ -269,10 +358,21 @@
   }
 
   document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && isQrPreviewModalOpen()) {
+      closeQrPreviewModal();
+      return;
+    }
+
     if (event.key === "Escape" && isDeleteModalOpen()) {
       closeDeleteModal();
     }
   });
+
+  if (qrPreviewCopyButton) {
+    qrPreviewCopyButton.addEventListener("click", () => {
+      copyText(qrPreviewCopyButton.getAttribute("data-copy-text"));
+    });
+  }
 
   if (window.bootstrap) {
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {

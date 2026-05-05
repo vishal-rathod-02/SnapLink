@@ -29,7 +29,7 @@ function buildQrOptions(size, format) {
     type: format,
     width: size,
     margin: 1,
-    errorCorrectionLevel: "M",
+    errorCorrectionLevel: "H",
     color: {
       dark: QR_COLOR_DARK,
       light: QR_COLOR_LIGHT,

@@ -207,9 +207,23 @@
               />
             </div>
             <div class="qr-preview-actions">
-              <a class="btn btn-outline-primary" href="<%= shortResult.qrPreviewUrl %>" target="_blank">
-                Preview
-              </a>
+              <button
+                type="button"
+                class="btn btn-outline-primary"
+                data-qr-preview-trigger
+                data-qr-image-url="<%= shortResult.qrPreviewUrl %>"
+                data-qr-short-url="<%= shortResult.shortUrl %>"
+                data-qr-original-url="<%= shortResult.originalUrl %>"
+                data-qr-type="<%= shortResult.isCustomAlias ? 'Custom alias' : 'Default code' %>"
+                data-qr-clicks="<%= formatNumber(shortResult.clicks || 0) %>"
+                data-qr-created="<%= formatDate(shortResult.createdAt) %>"
+                data-qr-last-visit="<%= shortResult.lastVisitedAt ? formatRelativeTime(shortResult.lastVisitedAt) : 'Not visited yet' %>"
+                data-qr-download-png="<%= shortResult.qrPngDownloadUrl %>"
+                data-qr-download-svg="<%= shortResult.qrSvgDownloadUrl %>"
+                data-qr-open-url="<%= shortResult.shortUrl %>"
+              >
+                Preview QR
+              </button>
               <a class="btn btn-outline-dark" href="<%= shortResult.qrPngDownloadUrl %>">
                 PNG
               </a>
@@ -268,30 +282,24 @@
                   <div class="d-inline-flex flex-wrap justify-content-end gap-2">
                     <a
                       class="btn btn-sm btn-outline-primary qr-inline-action"
-                      href="/urls/<%= url._id %>/qr?format=svg&size=220"
-                      target="_blank"
+                      href="#"
+                      role="button"
+                      data-qr-preview-trigger
+                      data-qr-image-url="/urls/<%= url._id %>/qr?format=svg&size=220"
+                      data-qr-short-url="<%= baseUrl %>/<%= url.shortCode %>"
+                      data-qr-original-url="<%= url.originalUrl %>"
+                      data-qr-type="<%= url.isCustomAlias ? 'Custom alias' : 'Default code' %>"
+                      data-qr-clicks="<%= formatNumber(url.clicks) %>"
+                      data-qr-created="<%= formatDate(url.createdAt) %>"
+                      data-qr-last-visit="<%= url.lastVisitedAt ? formatRelativeTime(url.lastVisitedAt) : 'Not visited yet' %>"
+                      data-qr-download-png="/urls/<%= url._id %>/qr?format=png&size=320&download=1"
+                      data-qr-download-svg="/urls/<%= url._id %>/qr?format=svg&size=320&download=1"
+                      data-qr-open-url="<%= baseUrl %>/<%= url.shortCode %>"
                       data-bs-toggle="tooltip"
-                      data-bs-title="Open QR preview"
+                      data-bs-title="Preview QR"
                     >
                       <i class="bi bi-qr-code"></i>
                     </a>
-                    <form
-                      method="POST"
-                      action="/urls/<%= url._id %>/delete"
-                      class="d-inline-flex js-delete-url-form"
-                    >
-                      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                      <input type="hidden" name="redirectTo" value="/" />
-                      <button
-                        class="btn btn-sm btn-delete-link"
-                        type="button"
-                        data-delete-url-trigger
-                        data-short-url="<%= baseUrl %>/<%= url.shortCode %>"
-                        data-original-url="<%= url.originalUrl %>"
-                      >
-                        <i class="bi bi-trash3 me-1"></i>Delete
-                      </button>
-                    </form>
                   </div>
                 </td>
               </tr>
@@ -350,6 +358,7 @@
     </main>
 
     <%- include('partials/delete-confirm-modal') %>
+    <%- include('partials/qr-preview-modal') %>
     <%- include('partials/copy-feedback') %>
 
     <%- include('partials/scripts') %>
